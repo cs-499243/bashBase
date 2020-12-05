@@ -3,5 +3,6 @@
 # Add to .bashrc or .bash_profile: 
 #	easyLoc="{location of easyAlias.sh}"; source "$easyLoc/easyAlias.sh"
 
+export bashBase=$easyLoc
 alias ad="$easyLoc/listerFix.sh -m manual"
 alias AD="$easyLoc/listerFix.sh"
