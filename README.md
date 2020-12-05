@@ -7,3 +7,7 @@ Bash programs that I use and find convenient
 - You can feed in a list of file names and it will auto create them X number of times with a certain name structure
 - Currently being generalised to a "do anything X times in this way" program
 - Will be linked to another script down the line that will add info to certain files and give them use
+## ytFeeder
+- In dev program that sorts youtube series for convient downloading
+## seriesSet
+- listerFix addon to allow series to be added quickly
