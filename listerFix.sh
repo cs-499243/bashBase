@@ -5,7 +5,7 @@ adCommand="touch"
 adInfo=false
 
 adFiller=""
-adIncFiller=" - "
+adIncFiller=""
 adIncrement=0
 adMode="automatic"
 
@@ -17,7 +17,8 @@ function commandAction {
 
 function giveInfo {
 	echo -n "INFO - Executing '$adCommand' with '$adMode' mode, "
-	echo "increment $adIncrement, filler '$adFiller'"
+	echo -n "increment '$adIncrement', filler '$adFiller', "
+	echo "increment filler '$adIncFiller'"
 	}
 
 function giveHelp {
@@ -73,21 +74,19 @@ while [ $# -gt 0 ]; do
 
 		-f|--filler)
 			case $2 in
-				'') 	;;
-				''|-*)	echo "WARNING - No filler given. Defaulting" ;;
-				*)		adFiller=$2; shift
+				-*)	echo "WARNING - No filler given. Defaulting" ;;
+				*)	adFiller=$2; shift
 			esac; shift ;;
 
 		-F|--spaced-filler)
 			case $2 in
-				'')		;;
-				''|-*)	echo "WARNING - No filler given. Defaulting";;
-				*)  	adFiller="$2 "; shift
+				-*)	echo "WARNING - No filler given. Defaulting";;
+				*)  adFiller="$2 "; shift
 			esac; shift ;;
 
 		-h|--help)
 			giveHelp
-			shift ;;
+			exit 0 ;;
 
 		-i|--increment)
 			if [[ $2 == -* ]]
@@ -100,15 +99,14 @@ while [ $# -gt 0 ]; do
 			
 		-if|--increment-filler)
 			case $2 in
-				'') 	;;
-				''|-*)	echo "WARNING - No filler given. Defaulting" ;;
-				*)		adIncFiller=$2; shift
+				-*)	echo "WARNING - No filler given. Defaulting" ;;
+				*)	adIncFiller=$2; shift
 			esac; shift ;;
 
 		-m|--mode)
 			case $2 in
 				manual|automatic)	adMode=$2; shift ;;
-				''|-*)				;;
+				-*)					;;
 				*)  				echo "ERROR - $2 is not a valid mode"; exit 0
 			esac; shift ;;
 
@@ -122,6 +120,7 @@ done
 
 # MAIN PROCESSING
 if $adInfo; then giveInfo; fi
+if [ $# -eq 0 ]; then echo "WARNING - No values given. Will blank out"; fi
 
 case $adMode in
 	manual) 	modeManual ;;
@@ -133,4 +132,3 @@ esac
 # 2) Allow an empty input to be given so it's just filler + increment
 # 3) Clean up the code so anything can be customisable from outside
 # 4) Fix up the help section
-# 5) Comment code
