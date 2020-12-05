@@ -5,5 +5,5 @@
 
 export bashBase=$bashBase
 alias ad="$bashBase/listerFix.sh -m manual"
-alias AD="$bashBase/listerFix.sh"
-
+alias ad_auto="$bashBase/listerFix.sh"
+alias ad_series="$basBase/seriesSet.sh"
