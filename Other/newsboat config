@@ -1,0 +1,8 @@
+max-items	0
+auto-reload	yes
+browser		firefox
+
+macro y		set browser "bash ~/.newsboat/youtubeDownloader.sh" ; open-in-browser ; set browser firefox 
+
+macro u		set browser "bash ~/.newsboat/youtubePlayer.sh" ; open-in-browser ; set browser firefox
+
