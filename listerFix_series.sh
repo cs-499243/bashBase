@@ -13,7 +13,7 @@ function badParameters {
 
 # Make folder with series expanded inside - if filler is given, used
 mkdir "$1"; cd "$1"
-bash $bashBase/listerFix.sh -i $2 ${3:+-f $3} ""
+bash $bashBase/listerFix.sh -i $2${3:+ -f $3} ""
 
 # If URL is given, make link file
 [[ -n $4 ]] && echo -e "[Desktop Entry]\nIcon=text-html\nType=Link\nURL[\$e]=$4" > _LINK
