@@ -1,5 +1,5 @@
 # $1 is the title
-# $2 is the url 
+# $2 is the url
 # $3 is the number of videos
 # $4 is the filler for each item - Do not include " - "
 echo "1 title, 2 url, 3 num, 4 filler"

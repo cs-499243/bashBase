@@ -11,7 +11,7 @@ adMode="automatic"
 
 
 # FUNCTIONS
-function commandAction { 
+function commandAction {
 	$adCommand "$adFiller$1" || echo "Invalid command"
 	}
 
@@ -39,7 +39,7 @@ function modeManual {
 		if [ "$adInput" = "" ]; then break; fi
 
 		if [ $adIncrement -eq 0 ]; then commandAction "$adInput"
-		else 
+		else
 			for ((i=1; i<=$adIncrement; i++)) do
 				commandAction "$adInput$adIncFiller$i"
 			done
