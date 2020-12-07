@@ -1,4 +1,6 @@
-# https://superuser.com/questions/1341684/youtube-dl-how-download-only-the-playlist-not-the-files-therein
+#!/bin/bash
+
+# Append this file to ~/.newsboat/urls as file://FILE LOCATION
 
 cleanList=$(youtube-dl -j --flat-playlist $1 | cut -c109- | rev | cut -c43- | rev)
 
@@ -9,41 +11,18 @@ cleanURLS=($(echo "$cleanList" | rev | cut -c2-12 | rev))
 
 IFS=$OLDIFS
 
+rssOutput="<?xml version="1.0" encoding="UTF-8" ?>\n<rss version='2.0'>\n\n<channel>\n\t<title>Local feed testing</title>"
+
 for ((i=0 ; i<${#cleanTitles[@]} ; i++)); do
 	itemTitle="${cleanTitles[i]}"
 	itemURL="${cleanURLS[i]}"
 	itemURLfull="https://www.youtube.com/watch?v=$itemURL"
 	
-	echo -e "$itemTitle - $itemURLfull"
-	
-	echo -e "[Desktop Entry]\nIcon=text-html\nType=Link\nURL[\$e]=$itemURLfull" > "$itemTitle"
+	rssOutput="$rssOutput\n\t<item>\n\t\t<title>$itemTitle</title>\n\t\t<link>$itemURLfull</link>\n\t</item>"
 done
 
-: '
-case $1 in
-	*.zip)
-		# $1 = NAME, $2 = VIDEO
-		unzip $1
-		locName=$(echo "$1" | cut -f 1 -d '.')
-		echo $locName
-		youtube-dl --load-info-json "$locName/$2"
-		rm "$locName/$2"
-		;;
-	http*)
-		## $1 = URL, $2 = NAME
-		newName="$2"
-		mkdir $newName
-		cd $newName
-		youtube-dl --skip-download --write-info-json --output "%(title)s" "$1"
-		ls > ../$newName.txt
-		cd ..
-		zip -r -9 $newName.zip $newName
-		rm -r $newName
-		exit 0;;
-esac
-'
+echo -e "$rssOutput\n</channel>\n\n</rss>"
+
 
 # TODO
-# - Get rid of the old code (replace it with something better)
-# - Arrange the new data in a useable form
 # - Make sure it allows for higher length videos (will mess up the cutting of cleanList)
