@@ -26,3 +26,5 @@ echo -e "$rssOutput\n</channel>\n\n</rss>"
 
 # TODO
 # - Make sure it allows for higher length videos (will mess up the cutting of cleanList)
+# - Allow it to be repeated X times
+# - Work in newsboat integration (once the configs and stuff are sorted)
