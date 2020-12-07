@@ -6,3 +6,4 @@ macro y		set browser "bash ~/.newsboat/youtubeDownloader.sh" ; open-in-browser ;
 
 macro u		set browser "bash ~/.newsboat/youtubePlayer.sh" ; open-in-browser ; set browser firefox
 
+macro d		set browser "bash ~/.newsboat/youtubeRemover.sh" ; open-in-browser ; set browser firefox
