@@ -11,12 +11,16 @@ Bash programs that I use and find convenient
 - Currently just allows you to download, open and move a youtube video from newsboat
 
 ## newsboat / youtubeFeeder.sh
-- [cut, rev, "$IFS", youtube-dl]
+- [cut, expr, "$IFS", rev, shift, youtube-dl]
 - Allows you to take a youtube playlist and convert it to an RSS file
 - Needs an addon to allow for continued updating
 
+## newsboat / youtubeFeeder_refresh.sh
+- [bash, cut, head, rev, shift, tail]
+- Not entirel useful but allows you to mass refresh files. More useful to directly refresh each with youtubeFeeder, however
+
 ## / bashHook.sh
-- [bash]
+- [alias, export, bash]
 - Simple script that links to .bash_profile to make things quicker/easier
 
 ## / listerFix.sh
