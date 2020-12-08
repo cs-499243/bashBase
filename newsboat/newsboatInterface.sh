@@ -1,4 +1,5 @@
 #!/bin/bash
+# TODO Replace sed sections with cut ala youtubeFeeder.sh
 
 function manageYoutube {
 	# Set basic variables for locations and youtube-dl
