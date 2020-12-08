@@ -13,7 +13,7 @@ Bash programs that I use and find convenient
 ## newsboat / youtubeFeeder.sh
 - [cut, rev, "$IFS", youtube-dl]
 - Allows you to take a youtube playlist and convert it to an RSS file
-- Will eventually allow for more stability and continued updating
+- Needs an addon to allow for continued updating
 
 ## / bashHook.sh
 - [bash]
