@@ -132,3 +132,4 @@ esac
 # 2) Allow an empty input to be given so it's just filler + increment
 # 3) Clean up the code so anything can be customisable from outside
 # 4) Fix up the help section
+# 5) Read folder contents with while IFS= read -r line; do touch "$line"; done < 

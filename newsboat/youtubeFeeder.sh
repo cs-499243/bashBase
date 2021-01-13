@@ -1,9 +1,13 @@
 #!/bin/bash
+
 # Append output file to ~/.newsboat/urls as file://FILE LOCATION
+# Takes input [VIDEO url]* - Converts playlist to rss feed
+
 
 function feedCreate {
+	echo "now doing $1"
 	# Set a title for the feed and basic data for the start of the file
-	rssTitle="$(youtube-dl --skip-download --playlist-item 1 -j $1 | cut -f13 -d"," | cut -c15- | rev | cut -c2- | rev)"
+	rssTitle="$(youtube-dl --skip-download --playlist-item 1 -j $1 | cut -f13 -d"," | cut -c15- | rev | cut -c2- | rev)" || break
 	rssOutput="<?xml version="1.0" encoding="UTF-8" ?>\n<rss version='2.0'>\n\n<channel>\n\t<title>$rssTitle</title>\n\t<link>$1</link>"
 
 	# Change the separator for arrays " " --> "\n" so I can split the data
@@ -38,14 +42,16 @@ function feedCreate {
 	done
 
 	# Output the complete rss file as a file named after the title (spaces replaced by underscores)
-	echo -e "$rssOutput\n</channel>\n\n</rss>" > ${rssTitle// /_}.rss
+	echo -e "$rssOutput\n</channel>\n\n</rss>" > $baseLoc/.newsboat/RSS/${rssTitle// /_}.rss
+	# If the rss feed is not already in the list of urls, it adds it
+	linkItem="file://$baseLoc/.newsboat/RSS/${rssTitle// /_}.rss"
+	[[ $(cat $baseLoc/.newsboat/urls) =~ $linkItem ]] || echo "$linkItem" >> $baseLoc/.newsboat/urls
 }
 
 # Allow for multiple feeds to be created at once
-while [ $# -gt 0 ]; do 
-	feedCreate "$1" &
+while [ $# -gt 0 ]; do
+	[[ "$1" =~ "playlist" ]] && feedCreate "$1" || echo "nah"
 	shift; done
 
 # TODO
-# - Allow it to be repeated X times
-# - Work in newsboat integration (once the configs and stuff are sorted)
+# - Allow you to append RSS feeds instead of rewriting them entirely (look for most recent posts in a playlist - give date based on current date)

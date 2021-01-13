@@ -13,4 +13,5 @@ function bashRelay {
 export baseLoc=~
 # Give aliases to my most used programs
 alias ad="$bashBase/listerFix.sh -m manual"
+alias ad_auto="$bashBase/listerFix.sh -m automatic"
 alias ad_series="$bashBase/listerFix_series.sh"

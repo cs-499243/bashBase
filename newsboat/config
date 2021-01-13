@@ -9,3 +9,5 @@ macro u		set browser "bash $baseLoc/.newsboat/newsboatInterface.sh open" ; open-
 macro d		set browser "bash $baseLoc/.newsboat/newsboatInterface.sh delete" ; open-in-browser ; set browser firefox
 
 macro p		set browser "bash $baseLoc/.newsboat/youtubeFeeder.sh" ; open-in-browser ; set browser firefox
+
+macro q		set browser "bash $baseLoc/.newsboat/youtubeFeeder.sh $(cat $baseLoc/.newsboat/RSS/_ytURLS)" ; open-in-browser ; set browser firefox
