@@ -1,57 +1,84 @@
-#!/bin/bash
+locNewsboat=$HOME/.newsboat
+locRSS=$HOME/.newsboat/RSS
 
-# Append output file to ~/.newsboat/urls as file://FILE LOCATION
-# Takes input [VIDEO url]* - Converts playlist to rss feed
+function downloadYT { [[ -n $1 ]] &&  youtube-dl -q $@; }
 
-
-function feedCreate {
-	echo "now doing $1"
-	# Set a title for the feed and basic data for the start of the file
-	rssTitle="$(youtube-dl --skip-download --playlist-item 1 -j $1 | cut -f13 -d"," | cut -c15- | rev | cut -c2- | rev)" || break
-	rssOutput="<?xml version="1.0" encoding="UTF-8" ?>\n<rss version='2.0'>\n\n<channel>\n\t<title>$rssTitle</title>\n\t<link>$1</link>"
-
-	# Change the separator for arrays " " --> "\n" so I can split the data
-	OLDIFS=$IFS; IFS=$'\n'
-	# Get playlist json data for a playlist and store as an array (split by "\n")
-	dataList=($(youtube-dl -j --flat-playlist $1))
-	# Reset separator for arrays, to be clean
-	IFS=$OLDIFS
-
-	# Loop through each item in json data list individually
-	for ((i=0 ; i<${#dataList[@]} ; i++)); do
-		# Set a temporary item for each item in the list (fastest method, for some reason)
-		dataItem="${dataList[i]}"
-		
-		# Loop for arbitrary number of times to correct potential errors
-		for looper in {6..50}; do
-			# Cut "title" between occurances of commas (between fixed 6 and an increasing upper bound) - accounts for titles with commas in them
-			dataTitle="$(echo $dataItem | cut -f6-$looper -d",")"
-			# Cut "URL" similarly but just take the occurance after the title is done
-			dataURL="$(echo $dataItem | cut -f$(expr $looper + 1) -d",")"
-			# Check if URL is "full" (data will have 4 speech marks present). If not, loop
-			checkURL="${dataURL//[^\"]}"; [[ "${#checkURL}" == "4" ]] && break
-		done
-		
-		# Clean up title and URL more to get the most basic data - here so it isn't repeated
-		cleanTitle="$(echo $dataTitle | cut -c11- | rev | cut -c2- | rev)"
-		cleanURL="$(echo $dataURL | cut -c9- | rev | cut -c2- | rev)"
-		# Make a full URL out of the clean copy - separate for debugging
-		fullURL="https://www.youtube.com/watch?v=$cleanURL"
-		# Add in an RSS entry for each full item in the array
-		rssOutput="$rssOutput\n\t<item>\n\t\t<title>$cleanTitle</title>\n\t\t<link>$fullURL</link>\n\t</item>"
-	done
-
-	# Output the complete rss file as a file named after the title (spaces replaced by underscores)
-	echo -e "$rssOutput\n</channel>\n\n</rss>" > $baseLoc/.newsboat/RSS/${rssTitle// /_}.rss
-	# If the rss feed is not already in the list of urls, it adds it
-	linkItem="file://$baseLoc/.newsboat/RSS/${rssTitle// /_}.rss"
-	[[ $(cat $baseLoc/.newsboat/urls) =~ $linkItem ]] || echo "$linkItem" >> $baseLoc/.newsboat/urls
+function getData {
+	# $1 = YTData, $2 = item, $3 = following item, $4 = setting
+	
+	# Find key lines in the feed
+	feedNStart=$(echo -e "$1" | grep -n -m 1 "$2\"" | cut -d : -f 1)
+	feedNEnd=$(echo -e "$1" | grep -n -m 1 "$3\"" | cut -d : -f 1)
+	
+	feedStart=$((feedNEnd - 1))
+	
+	case $4 in # Setting
+		GET) 
+			feedEnd=$((feedNEnd - feedNStart - 1))
+			# Extract out the specific lines
+			feedData=$(echo -e "$1" | head -n $feedStart | tail -n $feedEnd )
+			# Remove the " and ": at the ends of the string
+			echo -e $feedData | cut -c 2- | rev | cut -c 3- | rev
+			;;
+		CUT)
+			feedEnd=$(echo -e "$1" | wc -l)
+			echo -e "$1" | tail -n $((feedEnd - feedStart))
+			;;
+		*) ;;
+	esac
 }
 
-# Allow for multiple feeds to be created at once
-while [ $# -gt 0 ]; do
-	[[ "$1" =~ "playlist" ]] && feedCreate "$1" || echo "nah"
-	shift; done
 
-# TODO
-# - Allow you to append RSS feeds instead of rewriting them entirely (look for most recent posts in a playlist - give date based on current date)
+function RSStoNewsboatURLS {
+	# $1 = filename
+	touch $locNewsboat/urls
+	echo "file://$locRSS/$1" >> $locNewsboat/urls
+}
+
+
+function formRSS {
+	# $1 = URL
+	dataPlaylist=$(downloadYT --skip-download --playlist-item 1 -j $1 | cut -c-1000 | tr " " "\n")
+	YTTitle=$(getData "$dataPlaylist" "playlist" "start_time" GET)
+	
+	rssBody="<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version='2.0'>\n\n<channel>\n"
+	rssBody+="\t<title>$YTTitle</title>\n\t<link>$1</link>"
+	
+	dataVideos="$(downloadYT -j --flat-playlist $1 | tr " " "\n")"
+	
+	while :; do
+		YTVideo=$(getData "$dataVideos" "title" "url" GET)
+		dataVideos=$(getData "$dataVideos" "title" "url" CUT)
+		
+		YTURL=$(getData "$dataVideos" "url" "view_count" GET)
+		dataVideos=$(getData "$dataVideos" "url" "view_count" CUT)
+		
+		YTURLFull="https://www.youtube.com/watch?v=$YTURL"
+		
+		echo "$YTVideo - $YTURL"
+		
+		[[ -z $YTURL ]] && break
+		
+		rssBody+="\n\t<item>\n\t\t<title>$YTVideo</title>\n\t\t<link>$YTURLFull</link>\n\t</item>"
+	done
+	
+	mkdir -p $locRSS
+	echo -e "$rssBody\n</channel>\n\n</rss>" > $locRSS/${YTTitle// /_}.rss
+	
+	RSStoNewsboatURLS ${YTTitle// /_}.rss
+}
+
+
+while :; do
+	case $1 in # URL
+		*youtube.com*)
+			formRSS $1 2> /dev/null
+			;;
+		*.rss)
+			RSStoNewsboatURLS $1
+			;;
+		*)
+			break ;;
+	esac
+	shift
+done

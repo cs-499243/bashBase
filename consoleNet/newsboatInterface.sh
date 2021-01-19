@@ -1,51 +1,107 @@
-#!/bin/bash
+# CONFIG
+locNewsboat=$HOME/.newsboat
+locVideos=$HOME/Videos
 
-# Takes input [action] [VIDEO url] - works on a single video downloading and managing
+youtubeFormat="bestvideo[height<=480]+bestaudio/best[height<=480]"
 
-function manageYoutube {
-	# Set basic variables for locations and youtube-dl
-	outputLoc="$baseLoc/Videos"; ytdlForm="bestvideo[height<=480]+bestaudio/best[height<=480]"
+
+function downloadYT { [[ -n $1 ]] && youtube-dl -q -f $youtubeFormat $@; }
+
+function _getTitle {
+	# $1 = URL - youtubeData formatted as "URL|TITLE"
+	touch $locNewsboat/youtubeData.txt
+	fTitle=$(grep -s "$1" $locNewsboat/youtubeData.txt | cut -f2 -d"|" || echo "")
+	echo $fTitle; }
+
+function _getTitleYT { echo $(downloadYT -o "%(title)s" --get-filename $1); }
+
+
+
+function _addDownloaded {
+	# $1 = URL ;  
+	echo "$1|$(_getTitleYT $1)" >> $locNewsboat/youtubeData.txt; }
+
+function _rmDownloaded {
+	# $1 = video title
+	cp $locNewsboat/youtubeData.txt $locNewsboat/youtubeDataProcessing.txt
+	grep -v "$1" $locNewsboat/youtubeDataProcessing.txt > $locNewsboat/youtubeData.txt
+	rm $locNewsboat/youtubeDataProcessing.txt; }
+
+
+
+function _addBrowserMacro {
+	# $1 = key, $2 = command
+	echo "macro $1 set browser \"$2\" ; open-in-browser ; set browser firefox " >> $locNewsboat/config; }
+
+function addURL {
+	# $1 = URL
+	[[ -n $1 ]] || return
+	touch $locNewsboat/urls; echo $1 >> $locNewsboat/urls; }
+
+
+
+function _ytManage {
+	# $1 = COMMAND, $2 = URL
+	vidTitle=$(_getTitle $2) # Get title from the record file
+	vidFile=$(ls $locVideos | grep "$vidTitle" | tail -1)
 	
-	# Collect video data from youtubeData.txt (the offline title store)
-	if [[ -e $baseLoc/.newsboat/youtubeData.txt && "$(cat $baseLoc/.newsboat/youtubeData.txt)" =~ "$2" ]]; then 
-		titleData="$(grep -s $2 $baseLoc/.newsboat/youtubeData.txt | tail -1 | cut -f2 -d"|" )" || titleData=""
-		titleVideo="$( ls $outputLoc | grep "$titleData" )" || titleVideo=""
-		
-	else titleData=""; titleVideo=""; fi
+	echo $vidTitle
 	
 	case $1 in
-	down)
-		# If this video's data doesn't exist, add it to the data file
-		[[ -n $titleData ]] || echo "$2|$(youtube-dl --get-filename -o "%(title)s" -f $ytdlForm $2)" >> $baseLoc/.newsboat/youtubeData.txt
-		
-		# Download the video locally
-		youtube-dl -q -o "$outputLoc/%(title)s" -f $ytdlForm $2 2> /dev/null &
-		;;
-		
-	open)
-		# If video exists locally, open it (and ignore vlc errors)
-		[[ -n $titleVideo ]] && vlc "$outputLoc/$titleVideo" 2> /dev/null &
-		;;
-		
-	delete)
-		# Test if video exists locally (if not, do nothing)
-		if [[ -n $titleVideo ]]; then
-			# Get a version of the video data store without this video's data
-			newData=$(grep -v "$titleData" $baseLoc/.newsboat/youtubeData.txt)
-			
-			# Remove local copy of video and, if that is successful, rewrite video's data in data store
-			rm "$outputLoc/$titleVideo" && echo $newData > $baseLoc/.newsboat/youtubeData.txt
-		fi
-		;;
-		
-	*)
-		echo "Invalid input - $1"
-		;;
-		
+		GET)
+			if [[ -n $vidTitle ]]; then
+				: # Do nothing
+			else
+				_addDownloaded $2
+				downloadYT -o "$locVideos/%(title)s" $2 2> /dev/null &
+			fi ;;
+		OPEN)
+			if [[ -n $vidTitle ]]; then
+				mpv "$locVideos/$vidFile" 2&> /dev/null &
+			else
+				: # Do nothing
+			fi ;;
+		DELETE)
+			if [[ -n $vidTitle ]]; then
+				rm "$locVideos/$vidFile"
+				_rmDownloaded $vidTitle
+			else
+				: # Do nothing
+			fi ;;
+		*)
+			echo "INVALID COMMAND" ;;
 	esac
 	}
 
-# Give different ouputs for different web services
-[[ "$2" =~ "youtube.com" ]] && echo "$2 - youtube link"; manageYoutube $1 $2
-[[ "$2" =~ "nitter.net" ]] && echo "$2 - nitter/twitter link"
-[[ "$2" =~ "file://" ]] && echo "$2 - local file link"
+
+function _setDefConfig {
+	selfLoc="$bashBase/consoleNet/newsboatInterface.sh"
+	
+	echo "max-items 0" > $locNewsboat/config
+	echo "auto-reload yes" >> $locNewsboat/config
+	echo "browser firefox" >> $locNewsboat/config
+	_addBrowserMacro "y" "bash $selfLoc GET"
+	_addBrowserMacro "u" "bash $selfLoc OPEN"
+	_addBrowserMacro "d" "bash $selfLoc DELETE"
+	}
+
+
+case $1 in # SETTING
+	CONFIG) 
+		_setDefConfig ;;
+	ADD) 
+		addURL $2 ;;
+	*) 
+		case $2 in # URL
+			*www.youtube.com*) _ytManage $1 $2 ;;
+			nitter.net*) ;;
+			file:/*) ;;
+			*) ;;
+		esac ;;
+esac
+
+
+
+
+
+#  >> $locNewsboat/youtubeData.txt;
