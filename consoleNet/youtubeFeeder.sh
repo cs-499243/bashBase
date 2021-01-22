@@ -22,7 +22,7 @@ function getData {
 			;;
 		CUT)
 			feedEnd=$(echo -e "$1" | wc -l)
-			echo -e "$1" | tail -n $((feedEnd - feedStart))
+			echo -e "$1" | tail -n $((feedEnd - feedStart)) 
 			;;
 		*) ;;
 	esac
@@ -32,19 +32,39 @@ function getData {
 function RSStoNewsboatURLS {
 	# $1 = filename
 	touch $locNewsboat/urls
+	[[ -n $(cat $locNewsboat/urls | grep $1) ]] && return
 	echo "file://$locRSS/$1" >> $locNewsboat/urls
 }
 
 
 function formRSS {
-	# $1 = URL
-	dataPlaylist=$(downloadYT --skip-download --playlist-item 1 -j $1 | cut -c-1000 | tr " " "\n")
-	YTTitle=$(getData "$dataPlaylist" "playlist" "start_time" GET)
-	
-	rssBody="<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version='2.0'>\n\n<channel>\n"
-	rssBody+="\t<title>$YTTitle</title>\n\t<link>$1</link>"
-	
-	dataVideos="$(downloadYT -j --flat-playlist $1 | tr " " "\n")"
+	# [$2 = FORM, $1 = URL] - [$2 = UPDATE_int, $1 = RSS]
+	case $2 in
+	FORM)
+		dataPlaylist=$(downloadYT --skip-download --playlist-item 1 -j $1 | cut -c-1000 | tr " " "\n" | tr "/" " ")
+		
+		YTTitle=$(getData "$dataPlaylist" "playlist" "start_time" GET)
+		
+		rssHead="<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<rss version='2.0'>\n\n<channel>\n"
+		rssBody="\t<title>$YTTitle</title>\n\t<link>$1</link>"
+		rssTail="\n</channel>\n\n</rss>"
+		
+		dataVideos="$(downloadYT -j --flat-playlist $1 | tr " " "\n")"
+		;;
+	*)
+		YTTitle=$(sed -n '5p' $1 | cut -c 9- | rev | cut -c 9- | rev)
+		YTUrl=$(sed -n '6p' $1 | cut -c 8- | rev | cut -c 8- | rev)
+		
+		rssHead=$(head -6 $1)
+		rssLength=$(cat $1 | wc -l)
+		rssTail="\n$(tail -$rssLength $1)"
+		# TODO Fix this bit
+		
+		dataVideos="$(downloadYT -j --flat-playlist $YTUrl | tr " " "\n")"
+		[[ "$2" != 0 ]]  && dataVideos=$(echo -e "$dataVideos" | cut -c-$2)
+		
+		;;
+	esac
 	
 	while :; do
 		YTVideo=$(getData "$dataVideos" "title" "url" GET)
@@ -55,30 +75,43 @@ function formRSS {
 		
 		YTURLFull="https://www.youtube.com/watch?v=$YTURL"
 		
-		echo "$YTVideo - $YTURL"
+		echo "$YTTitle - $YTVideo - $YTURL"
 		
 		[[ -z $YTURL ]] && break
+		
+		[[ -n $(echo -e "$rssTail" | grep "$YTURL</link>") ]] && continue
 		
 		rssBody+="\n\t<item>\n\t\t<title>$YTVideo</title>\n\t\t<link>$YTURLFull</link>\n\t</item>"
 	done
 	
 	mkdir -p $locRSS
-	echo -e "$rssBody\n</channel>\n\n</rss>" > $locRSS/${YTTitle// /_}.rss
+	echo -e "$rssHead$rssBody$rssTail" > $locRSS/${YTTitle// /_}.rss
 	
 	RSStoNewsboatURLS ${YTTitle// /_}.rss
 }
 
-
 while :; do
-	case $1 in # URL
+	case $1 in 
 		*youtube.com*)
-			formRSS $1 2> /dev/null
+			formRSS $1 FORM #2> /dev/null
 			;;
 		*.rss)
-			RSStoNewsboatURLS $1
+			formRSS $1 0
+			;;
+		UPDATE) # Now $2 is URL
+			fileLoc=$(grep -l -r "$2" $locRSS)
+			formRSS $fileLoc 0
+			;;
+		FULL_UPDATE)
+			fileLoc=$(grep -l -r "$2" $locRSS)
+			formRSS $fileLoc 10000
 			;;
 		*)
 			break ;;
 	esac
 	shift
 done
+
+#TODO
+# - Do not write no-title videos to youtubeData
+# - Extend to allow any feeds to be parsed - separate out the feed reading/writing part

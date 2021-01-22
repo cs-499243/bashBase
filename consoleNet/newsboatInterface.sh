@@ -75,14 +75,16 @@ function _ytManage {
 
 
 function _setDefConfig {
-	selfLoc="$bashBase/consoleNet/newsboatInterface.sh"
+	selfLoc="$bashBase/consoleNet"
 	
 	echo "max-items 0" > $locNewsboat/config
 	echo "auto-reload yes" >> $locNewsboat/config
 	echo "browser firefox" >> $locNewsboat/config
-	_addBrowserMacro "y" "bash $selfLoc GET"
-	_addBrowserMacro "u" "bash $selfLoc OPEN"
-	_addBrowserMacro "d" "bash $selfLoc DELETE"
+	_addBrowserMacro "y" "bash $selfLoc/newsboatInterface.sh GET"
+	_addBrowserMacro "u" "bash $selfLoc/newsboatInterface.sh OPEN"
+	_addBrowserMacro "d" "bash $selfLoc/newsboatInterface.sh DELETE"
+	_addBrowserMacro "r" "bash $selfLoc/youtubeFeeder.sh UPDATE"
+	_addBrowserMacro "R" "bash $selfLoc/youtubeFeeder.sh FULL_UPDATE"
 	}
 
 
