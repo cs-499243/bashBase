@@ -16,7 +16,7 @@ function badParameters {
 
 mkdir "$1"; cd "$1"
 # Run listerFix for "num" given and "filler", if given
-bash $bashBase/listerFix.sh -i $2${3:+ -f $3} ""
+bash $bashBase/listerFix/listerFix.sh -i $2${3:+ -f "$3"} ""
 
 # Make a url file if the "URL" is given
 [[ -n $4 ]] && echo -e "[Desktop Entry]\nIcon=text-html\nType=Link\nURL[\$e]=$4" > _LINK
