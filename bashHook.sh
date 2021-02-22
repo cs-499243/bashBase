@@ -4,13 +4,11 @@
 #	export bashBase="LOCATION OF THIS FOLDER"; source "$bashBase/bashHook.sh"
 
 function bashHook {
-	echo -e "ad\t\t - listerFix manual mode"
+	echo -e "ad\t\t - listerFix"
 	echo -e "hookedit\t - edit bashHook"
 	echo -e "refresh\t\t - reload .bash_profile"
 
 	echo -e "bashRelay\t - directly reference bashBase .sh files"
-	echo -e "ad_auto\t\t - listerFix automatic mode"
-	echo -e "ad_series\t - listerFix addon to support series"
 	echo -e "newk\t\t - open something in a new konsole"
 
 	echo -e "q\t\t - Regex Query to run commands on searched items"
@@ -25,7 +23,7 @@ function bashHook {
 }
 
 # Give aliases to my most used programs
-alias ad="$bashBase/listerFix/listerFix.sh -m manual"
+alias ad="$bashBase/listerFix/listerFix.sh"
 alias hookedit="nano $bashBase/bashHook.sh"
 alias refresh="source $HOME/.bash_profile"
 

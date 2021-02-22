@@ -12,14 +12,7 @@ Bash programs that I use and find convenient
 
 ## listerFix / listerFix.sh [OUTDATED - IN DEV]
  - []
- - A rewrite of a python script I made to easily make files based a given formatting
- - You can feed in a list of file names and it will auto create them X number of times with a certain name structure
- - Currently being generalised to a "do anything X times in this way" program
- - Will be linked to another script down the line that will add info to certain files and give them use
-
-## listerFix / listerFix_series.sh [OUTDATED - IN DEV]
- - []
- - listerFix addon to quickly make "series" folders with a URL link
+ - Lets you run a command in sequence very easily
 
 ## Misc / bashRelay.sh
  - ["konsole", youtube-dl]
