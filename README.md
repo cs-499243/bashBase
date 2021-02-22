@@ -10,7 +10,7 @@ Bash programs that I use and find convenient
  - Essentially it's an xml parser in bash that takes a lot of data and organises it cleanly
  - Converts a youtube playlist url into a full RSS feed (with accurate title, videos and URLS)
 
-## listerFix / listerFix.sh [OUTDATED - IN DEV]
+## listerFix / listerFix.sh
  - []
  - Lets you run a command in sequence very easily
 
