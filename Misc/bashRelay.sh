@@ -30,10 +30,16 @@ function qrm {
 	[[ "$rm_confirm" == "YES" ]] && rm "$rmRemove"
 }
 
-function youtube480 { [[ -n $1 ]] && youtube-dl -o "%(title)s" -f "bestvideo[height<=480]+bestaudio/best[height<=480]" $1; }
+function youtube480 { [[ -n $1 ]] && youtube-dl -o "%(title)s" -i -f "bestvideo[height<=480]+bestaudio/best[height<=480]" $1; }
 
 function newk {
 	[[ -n $1 ]] || return
-	konsole -e "$@" &
+	st -e "$@" &
+	disown
+	}
+
+function clean {
+	[[ -n $1 ]] || return
+	$@ &> /dev/null &
 	disown
 	}

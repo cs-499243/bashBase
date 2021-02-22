@@ -70,23 +70,23 @@ while [ $# -gt 0 ]; do
 
 	case $1 in
 		-e|--echo)
-			adCommand="echo"; shift ;;
+			adCommand="echo"; shift; ;;
 
 		-f|--filler)
 			case $2 in
 				-*)	echo "WARNING - No filler given. Defaulting" ;;
 				*)	adFiller=$2; shift
-			esac; shift ;;
+			esac; shift; ;;
 
 		-F|--spaced-filler)
 			case $2 in
 				-*)	echo "WARNING - No filler given. Defaulting";;
 				*)  adFiller="$2 "; shift
-			esac; shift ;;
+			esac; shift; ;;
 
 		-h|--help)
 			giveHelp
-			exit 0 ;;
+			exit 0; ;;
 
 		-i|--increment)
 			if [[ $2 == -* ]]
@@ -95,25 +95,25 @@ while [ $# -gt 0 ]; do
 				then adIncrement=$2; shift
 			else
 				echo "ERROR - $2 is not a valid increment (integer)"; exit 0
-			fi; shift ;;
+			fi; shift; ;;
 			
 		-if|--increment-filler)
 			case $2 in
 				-*)	echo "WARNING - No filler given. Defaulting" ;;
 				*)	adIncFiller=$2; shift
-			esac; shift ;;
+			esac; shift; ;;
 
 		-m|--mode)
 			case $2 in
 				manual|automatic)	adMode=$2; shift ;;
 				-*)					;;
 				*)  				echo "ERROR - $2 is not a valid mode"; exit 0
-			esac; shift ;;
+			esac; shift; ;;
 
 		-?|--info)
-			adInfo=true; shift ;;
+			adInfo=true; shift; ;;
 
-		*)	break
+		*)	break; ;;
 			
 	esac
 done
